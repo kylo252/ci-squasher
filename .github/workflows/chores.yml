@@ -17,7 +17,32 @@ on:
     - cron: "*/15 10-14 * * 0,6"
     - cron: "0 14 * * 1-5"
 
+env:
+  COLLECTION_BRANCH: typos-collector
+
 jobs:
+  maintain-collector:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ env.COLLECTION_BRANCH }}
+
+      - name: Setup git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: ensure collector up-to-date
+        run: |
+          git rebase origin/master
+          git push --force
+
   fix-typos:
     runs-on: ubuntu-latest
     continue-on-error: false
@@ -26,19 +51,20 @@ jobs:
       pull-requests: write
     env:
       COMMIT_MESSAGE: "chore(docs): fix typos"
-      COLLECTION_BRANCH: origin/typos-collector
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Setup git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       # using existing branches in unsafe, see https://github.com/peter-evans/create-pull-request/issues/1173
       - name: import changes from collection
         run: |
-          set -x
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git merge --squash "$COLLECTION_BRANCH"
+          git merge --squash "origin/$COLLECTION_BRANCH"
           ## option(1) commit them manually
           # COMMIT_BODY=$(git log --format=%B --reverse "$COLLECTION_BRANCH"..."$COLLECTION_BRANCH@{1}")
           # git commit -m"$COMMIT_MESSAGE" -m"${COMMIT_BODY[@]}"
@@ -50,7 +76,7 @@ jobs:
 
       - id: get-pr-body
         run: |
-          body=$(git log --format=%B --reverse "$COLLECTION_BRANCH"..."$COLLECTION_BRANCH@{1}")
+          body=$(git log --format=%B --reverse "origin/$COLLECTION_BRANCH"..."origin/$COLLECTION_BRANCH@{1}")
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
