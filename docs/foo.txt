@@ -1,1 +1,1 @@
-foo is a very important componant.
+foo is a very important component.
