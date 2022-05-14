@@ -24,21 +24,39 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      COMMIT_MESSAGE: "chore(docs): fix typos"
+      COLLECTION_BRANCH: origin/typos-collector
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
 
+      # using existing branches in unsafe, see https://github.com/peter-evans/create-pull-request/issues/1173
+      - name: import changes from collection
+        run: |
+          git switch -c fix-typos
+          git merge --squash $COLLECTION_BRANCH
+          ## option(1) commit them manually
+          # git commit -m"$COMMIT_MESSAGE" -m"$(git log --format=%B $COLLECTION_BRANCH...origin/master)"
+          ## option(2) let the gha deal with it
+          git restore --staged .
+
       - name: Run tests
         run: echo make test
+
+      - id: get-pr-body
+        run: |
+          body=$(git log --format=%B $COLLECTION_BRANCH...origin/master)
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo ::set-output name=body::$body
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          base: master
-          branch: fix-typos
-          delete-branch: false # Delete the branch when closing pull requests, and when undeleted after merging.
           token: ${{ secrets.GITHUB_TOKEN }}
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          title: "chore(docs): fix typos"
-          commit-message: "chore(docs): fix typos"
+          title: ${{ env.COMMIT_MESSAGE }}
+          body: ${{ steps.get-pr-body.outputs.body }}
