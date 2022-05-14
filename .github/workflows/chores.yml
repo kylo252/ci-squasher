@@ -36,6 +36,8 @@ jobs:
       - name: import changes from collection
         run: |
           set -x
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git switch -c fix-typos
           git merge --squash "$COLLECTION_BRANCH"
           ## option(1) commit them manually
