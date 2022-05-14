@@ -59,6 +59,8 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
+          branch: fix-typos
+          delete-branch: true # Delete the branch when closing pull requests, and when undeleted after merging.
           token: ${{ secrets.GITHUB_TOKEN }}
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           title: ${{ env.COMMIT_MESSAGE }}
