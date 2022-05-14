@@ -40,7 +40,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git merge --squash "$COLLECTION_BRANCH"
           ## option(1) commit them manually
-          # git commit -m"$COMMIT_MESSAGE" -m"$(git log --format=%B $COLLECTION_BRANCH...origin/master)"
+          # COMMIT_BODY=$(git log --format=%B --reverse "$COLLECTION_BRANCH"..."$COLLECTION_BRANCH@{1}")
+          # git commit -m"$COMMIT_MESSAGE" -m"${COMMIT_BODY[@]}"
           ## option(2) let the gha deal with it
           git restore --staged .
 
@@ -49,7 +50,7 @@ jobs:
 
       - id: get-pr-body
         run: |
-          body=$(git log --format=%B $COLLECTION_BRANCH...origin/master)
+          body=$(git log --format=%B --reverse "$COLLECTION_BRANCH"..."$COLLECTION_BRANCH@{1}")
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
@@ -63,4 +64,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           title: ${{ env.COMMIT_MESSAGE }}
+          commit-message: ${{ env.COMMIT_MESSAGE }}
           body: ${{ steps.get-pr-body.outputs.body }}
