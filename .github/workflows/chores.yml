@@ -35,6 +35,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
+          base: master
           branch: fix-typos
           delete-branch: false # Delete the branch when closing pull requests, and when undeleted after merging.
           token: ${{ secrets.GITHUB_TOKEN }}
