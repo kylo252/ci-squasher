@@ -35,8 +35,9 @@ jobs:
       # using existing branches in unsafe, see https://github.com/peter-evans/create-pull-request/issues/1173
       - name: import changes from collection
         run: |
+          set -x
           git switch -c fix-typos
-          git merge --squash $COLLECTION_BRANCH
+          git merge --squash "$COLLECTION_BRANCH"
           ## option(1) commit them manually
           # git commit -m"$COMMIT_MESSAGE" -m"$(git log --format=%B $COLLECTION_BRANCH...origin/master)"
           ## option(2) let the gha deal with it
