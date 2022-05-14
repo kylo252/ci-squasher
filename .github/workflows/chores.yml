@@ -20,7 +20,7 @@ on:
 jobs:
   fix-typos:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: false
     permissions:
       contents: write
       pull-requests: write
@@ -28,9 +28,9 @@ jobs:
       COMMIT_MESSAGE: "chore(docs): fix typos"
       COLLECTION_BRANCH: origin/typos-collector
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       # using existing branches in unsafe, see https://github.com/peter-evans/create-pull-request/issues/1173
       - name: import changes from collection
