@@ -33,11 +33,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ env.COLLECTION_BRANCH }}
 
-      - name: Setup git config
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: ensure collector up-to-date
         run: |
           git rebase origin/master
@@ -56,27 +51,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup git config
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       # using existing branches in unsafe, see https://github.com/peter-evans/create-pull-request/issues/1173
       - name: import changes from collection
         run: |
-          git merge --squash "origin/$COLLECTION_BRANCH"
-          ## option(1) commit them manually
-          # COMMIT_BODY=$(git log --format=%B --reverse "$COLLECTION_BRANCH"..."$COLLECTION_BRANCH@{1}")
-          # git commit -m"$COMMIT_MESSAGE" -m"${COMMIT_BODY[@]}"
-          ## option(2) let the gha deal with it
-          git restore --staged .
+          git show "origin/$COLLECTION_BRANCH" | git apply
 
       - name: Run tests
         run: echo make test
 
       - id: get-pr-body
         run: |
-          body=$(git log --format=%B --reverse "origin/$COLLECTION_BRANCH"..."origin/$COLLECTION_BRANCH@{1}")
+          body=$(git log --format=%B --reverse "origin/$COLLECTION_BRANCH"...origin/master)
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
